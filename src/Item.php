@@ -17,12 +17,4 @@ class Item implements \Stringable
     {
         return (string) "{$this->name}, {$this->sellIn}, {$this->quality}";
     }
-
-    public function updateQuality(): void {
-
-    }
-
-    public function updateSellIn(): void {
-
-    }
 }

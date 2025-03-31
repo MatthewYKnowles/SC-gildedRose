@@ -15,8 +15,15 @@ final class GildedRose
         foreach ($items as $item) {
             if ($item->name == $this->backstagePass) {
                 $this->items[] = new BackstagePass($item->name, sellIn: $item->sellIn, quality: $item->quality);
-            } else {
-                $this->items[] = new Item($item->name, sellIn: $item->sellIn, quality: $item->quality);
+            }
+            else if ($item->name == $this->agedBrie) {
+                $this->items[] = new AgedBrie($item->name, sellIn: $item->sellIn, quality: $item->quality);
+            }
+            else if ($item->name == $this->sulfuras) {
+                $this->items[] = new Sulfuras($item->name, sellIn: $item->sellIn, quality: $item->quality);
+            }
+            else {
+                $this->items[] = new StandardItem($item->name, sellIn: $item->sellIn, quality: $item->quality);
             }
         }
     }
@@ -24,55 +31,47 @@ final class GildedRose
     public function updateQuality(): void
     {
         foreach ($this->items as $item) {
-            if ($item->name == $this->backstagePass) {
-                $item->updateQuality();
-                $item->updateSellIn();
-            } else {
-                if ($this->notBrieOrBackstagePassOrSulfuros($item)) {
-                    if ($item->quality > 0) {
-                        $item->quality = $item->quality - 1;
-                    }
-                } else {
-                    if ($item->quality < 50) {
-                        if ($item->name == $this->backstagePass) {
-                            $item->updateQuality();
-                        } else {
-                            $item->quality++;
-                        }
-                    }
-                }
+            $item->updateQuality();
+            $item->updateSellIn();
+        }
+    }
+}
+class Sulfuras extends Item {
+    public function __construct(public string $name, public int $sellIn, public int $quality)
+    {
+        parent::__construct($name, $sellIn, $quality);
+    }
 
-                if ($item->name != $this->sulfuras) {
-                    $item->sellIn = $item->sellIn - 1;
-                }
+    public function updateQuality(): void {
+        if ($this->quality < 50){
+            $this->quality++;
+        }
+    }
 
-                if ($item->sellIn < 0) {
-                    if ($item->name != $this->agedBrie) {
-                        if ($item->name != $this->backstagePass) {
-                            if ($item->quality > 0) {
-                                if ($item->name != $this->sulfuras) {
-                                    $item->quality = $item->quality - 1;
-                                }
-                            }
-                        } else {
-                            $item->quality = 0;
-                        }
-                    } else {
-                        if ($item->quality < 50) {
-                            $item->quality++;
-                        }
-                    }
-                }
+    public function updateSellIn(): void {
+    }
+}
+
+class AgedBrie extends Item {
+    public function __construct(public string $name, public int $sellIn, public int $quality)
+    {
+        parent::__construct($name, $sellIn, $quality);
+    }
+
+    public function updateQuality(): void {
+        if ($this->quality < 50){
+            $this->quality++;
+        }
+        if ($this->sellIn < 1) {
+            if ($this->quality < 50) {
+                $this->quality++;
             }
         }
     }
 
-    public function notBrieOrBackstagePassOrSulfuros(Item $item): bool
-    {
-        return $item->name != $this->agedBrie and $item->name != $this->backstagePass and $item->name != $this->sulfuras;
+    public function updateSellIn(): void {
+        $this->sellIn--;
     }
-
-
 }
 
 class BackstagePass extends Item {
@@ -97,6 +96,28 @@ class BackstagePass extends Item {
         }
         if ($this->sellIn < 1) {
             $this->quality = 0;
+        }
+    }
+
+    public function updateSellIn(): void {
+        $this->sellIn--;
+    }
+}
+
+class StandardItem extends Item {
+    public function __construct(public string $name, public int $sellIn, public int $quality)
+    {
+        parent::__construct($name, $sellIn, $quality);
+    }
+
+    public function updateQuality(): void {
+        if ($this->quality > 0) {
+            $this->quality = $this->quality - 1;
+        }
+        if ($this->sellIn < 1) {
+            if ($this->quality > 0) {
+                $this->quality = $this->quality - 1;
+            }
         }
     }
 
